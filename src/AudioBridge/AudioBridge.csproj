@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>AudioBridge</AssemblyName>
+    <RootNamespace>AudioBridge</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AudioBridge.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="3.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Build-Release.ps1 downloads this official VB-Audio package temporarily.
+         The archive is embedded in release binaries, not committed to the source repository. -->
+    <EmbeddedResource Include="Assets\VBCABLE_Driver_Pack45.zip"
+                      LogicalName="AudioBridge.ThirdParty.VBCABLE_Driver_Pack45.zip"
+                      Condition="Exists('Assets\VBCABLE_Driver_Pack45.zip')" />
+  </ItemGroup>
+</Project>

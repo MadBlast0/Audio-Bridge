@@ -1,0 +1,41 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="AudioBridge"
+    Manufacturer="AudioBridge Project"
+    Version="$(var.ProductVersion)"
+    UpgradeCode="{B6D77CC6-3A1A-48AB-AB6B-18F3C2514C61}"
+    Scope="perMachine"
+    InstallerVersion="500">
+
+    <SummaryInformation Description="AudioBridge audio routing utility for Windows 11" Manufacturer="AudioBridge Project" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of AudioBridge is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="MainFeature" Title="AudioBridge" Level="1">
+      <ComponentRef Id="AudioBridgeExecutable" />
+      <ComponentRef Id="AudioBridgeStartMenuShortcut" />
+    </Feature>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="AudioBridge">
+        <Component Id="AudioBridgeExecutable" Guid="*">
+          <File Id="AudioBridgeExe" Source="$(var.AppPublishDir)AudioBridge.exe" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AudioBridgeProgramMenu" Name="AudioBridge">
+        <Component Id="AudioBridgeStartMenuShortcut" Guid="*">
+          <Shortcut Id="AudioBridgeStartMenuLink"
+                    Name="AudioBridge"
+                    Description="Route application audio and microphone audio"
+                    Target="[INSTALLFOLDER]AudioBridge.exe"
+                    WorkingDirectory="INSTALLFOLDER" />
+          <RemoveFolder Id="RemoveAudioBridgeProgramMenu" On="uninstall" />
+          <RegistryValue Root="HKLM" Key="Software\AudioBridge" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+  </Package>
+</Wix>
