@@ -25,6 +25,7 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
 }
 
 New-Item -ItemType Directory -Force -Path $ArtifactDir, $PublishDir, $DriverAssets | Out-Null
+Remove-Item (Join-Path $ArtifactDir 'SHA256.txt') -Force -ErrorAction SilentlyContinue
 if (-not $SkipDriverPayload -and -not (Test-Path $DriverZip)) {
     Write-Host 'Downloading the official VB-Audio VB-CABLE package for embedding in this release...' -ForegroundColor Cyan
     Invoke-WebRequest -Uri $DriverUrl -OutFile $DriverZip
@@ -74,9 +75,6 @@ try {
     if (-not (Test-Path $MsiOutput)) { throw 'WiX completed without producing AudioBridge-Setup.msi.' }
     Copy-Item $MsiOutput (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -Force
     Copy-Item (Join-Path $PublishDir 'AudioBridge.exe') (Join-Path $ArtifactDir 'AudioBridge.exe') -Force
-    Get-FileHash (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -Algorithm SHA256 | Format-List | Out-File (Join-Path $ArtifactDir 'SHA256.txt')
-    Get-FileHash (Join-Path $ArtifactDir 'AudioBridge.exe') -Algorithm SHA256 | Format-List | Out-File -Append (Join-Path $ArtifactDir 'SHA256.txt')
-
     Write-Host ''
     Write-Host 'Release build completed:' -ForegroundColor Green
     Write-Host (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -ForegroundColor Green

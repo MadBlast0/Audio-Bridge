@@ -43,9 +43,9 @@ On Windows with the .NET 10 SDK and WiX Toolset restore access:
 .\build\Build-Release.ps1 -Version 1.0.0
 ```
 
-Or double-click `build\Build-Release.bat`. The build publishes a self-contained Windows x64 executable, builds the MSI installer, and writes the MSI, EXE, and SHA-256 hashes to `artifacts\`. Unless `-SkipDriverPayload` is used, the build downloads and validates the official VB-CABLE package and embeds it in the executable. A temporarily downloaded driver archive is removed from the source tree after the build.
+Or double-click `build\Build-Release.bat`. The build publishes a self-contained Windows x64 executable and builds the MSI installer in `artifacts\`. Unless `-SkipDriverPayload` is used, the build downloads and validates the official VB-CABLE package and embeds it in the executable. A temporarily downloaded driver archive is removed from the source tree after the build.
 
-GitHub Actions runs only when you push a version tag such as `v1.0.0`. It builds the release MSI and EXE, then attaches them and their SHA-256 hashes to a GitHub Release. Regular commits and pushes to `main` do not run a workflow. For each release, create and push a new tag, incrementing one of the first three version numbers (for example, `v1.0.0` then `v1.0.1`).
+GitHub Actions runs only when you push a version tag such as `v1.0.0`. It builds the release MSI and EXE, then attaches them to a GitHub Release. Regular commits and pushes to `main` do not run a workflow. For each release, create and push a new tag, incrementing one of the first three version numbers (for example, `v1.0.0` then `v1.0.1`).
 
 The MSI is a per-machine Windows Installer package and can be removed through Windows Settings or Control Panel. It is configured for major upgrades: each published version must have a higher three-part version (for example, `1.0.0` to `1.1.0`) and must keep the existing `UpgradeCode` in `installer/AudioBridge.Installer.wxs`. The installer then replaces the older version; attempts to install an older version over a newer one are blocked.
 
