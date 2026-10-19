@@ -55,16 +55,24 @@ try {
     if (-not (Test-Path (Join-Path $PublishDir 'AudioBridge.exe'))) { throw 'AudioBridge.exe was not produced.' }
 
     Write-Host 'Building the MSI installer...' -ForegroundColor Cyan
-    Write-Host 'Checking the WiX installer source files...' -ForegroundColor Cyan
-    & dotnet msbuild $InstallerProject -getItem:Compile
-    if ($LASTEXITCODE -ne 0) { throw "Could not inspect WiX source items (exit code $LASTEXITCODE)." }
-    & dotnet build $InstallerProject --configuration Release `
-        -p:AppPublishDir="$PublishDir\" -p:ProductVersion=$Version
+    $ToolTempDir = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }
+    $WixToolDir = Join-Path $ToolTempDir 'audiobridge-wix-tool'
+    & dotnet tool install --tool-path $WixToolDir wix --version 5.0.2
+    if ($LASTEXITCODE -ne 0) { throw "WiX tool installation failed with exit code $LASTEXITCODE." }
+    $WixExe = Join-Path $WixToolDir 'wix.exe'
+    if (-not (Test-Path $WixExe)) { throw "WiX compiler was not found at '$WixExe'." }
+    $InstallerSource = Join-Path $Root 'installer\AudioBridge.Installer.wxs'
+    $MsiOutputDir = Join-Path $Root 'installer\bin\Release'
+    $MsiOutput = Join-Path $MsiOutputDir 'AudioBridge-Setup.msi'
+    New-Item -ItemType Directory -Force -Path $MsiOutputDir | Out-Null
+    Remove-Item $MsiOutput -Force -ErrorAction SilentlyContinue
+
+    & $WixExe build -arch x64 -d "AppPublishDir=$PublishDir\" -d "ProductVersion=$Version" `
+        -out $MsiOutput $InstallerSource
     if ($LASTEXITCODE -ne 0) { throw "MSI build failed with exit code $LASTEXITCODE." }
 
-    $BuiltMsi = Get-ChildItem (Join-Path $Root 'installer\bin\Release') -Filter 'AudioBridge-Setup.msi' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $BuiltMsi) { throw 'The build succeeded but AudioBridge-Setup.msi was not found under installer\bin\Release.' }
-    Copy-Item $BuiltMsi.FullName (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -Force
+    if (-not (Test-Path $MsiOutput)) { throw 'WiX completed without producing AudioBridge-Setup.msi.' }
+    Copy-Item $MsiOutput (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -Force
     Copy-Item (Join-Path $PublishDir 'AudioBridge.exe') (Join-Path $ArtifactDir 'AudioBridge.exe') -Force
     Get-FileHash (Join-Path $ArtifactDir 'AudioBridge-Setup.msi') -Algorithm SHA256 | Format-List | Out-File (Join-Path $ArtifactDir 'SHA256.txt')
     Get-FileHash (Join-Path $ArtifactDir 'AudioBridge.exe') -Algorithm SHA256 | Format-List | Out-File -Append (Join-Path $ArtifactDir 'SHA256.txt')
