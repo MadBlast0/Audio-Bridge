@@ -5,6 +5,12 @@ namespace AudioBridge;
 internal sealed class LevelMeter : Control
 {
     private float _level;
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public Color InactiveColor { get; set; } = Color.FromArgb(238, 238, 237);
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public Color ActiveColor { get; set; } = Color.FromArgb(52, 52, 52);
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public Color PeakColor { get; set; } = Color.FromArgb(105, 105, 105);
     public LevelMeter()
     {
         DoubleBuffered = true;
@@ -36,9 +42,9 @@ internal sealed class LevelMeter : Control
         float totalGap = gap * (segments - 1);
         float segmentWidth = Math.Max(2f, (Width - totalGap) / (float)segments);
         int filled = (int)Math.Round(_level * segments);
-        using var background = new SolidBrush(Color.FromArgb(238, 238, 237));
-        using var active = new SolidBrush(Color.FromArgb(52, 52, 52));
-        using var high = new SolidBrush(Color.FromArgb(105, 105, 105));
+        using var background = new SolidBrush(InactiveColor);
+        using var active = new SolidBrush(ActiveColor);
+        using var high = new SolidBrush(PeakColor);
         for (int i = 0; i < segments; i++)
         {
             float x = i * (segmentWidth + gap);

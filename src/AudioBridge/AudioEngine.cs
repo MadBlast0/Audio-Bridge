@@ -26,7 +26,6 @@ internal sealed class AudioEngine : IAsyncDisposable
     private WasapiPlayer? _player;
     private WasapiPlayer? _monitorPlayer;
     private IDisposable? _primaryReader;
-    private IDisposable? _monitorReader;
     private GainWaveProvider? _monitorGainProvider;
     private int _monitorGainPercent = 60;
     private bool _running;
@@ -35,13 +34,14 @@ internal sealed class AudioEngine : IAsyncDisposable
 
     public float ApplicationGainDb { get => _mixer.ApplicationGainDb; set => _mixer.ApplicationGainDb = value; }
     public float MicrophoneGainDb { get => _mixer.MicrophoneGainDb; set => _mixer.MicrophoneGainDb = value; }
-    public float OutputGainDb { get => _mixer.OutputGainDb; set => _mixer.OutputGainDb = value; }
+    public int ApplicationVolumePercent { get => _mixer.ApplicationVolumePercent; set => _mixer.ApplicationVolumePercent = value; }
+    public int MicrophoneVolumePercent { get => _mixer.MicrophoneVolumePercent; set => _mixer.MicrophoneVolumePercent = value; }
+    public int OutputVolumePercent { get => _mixer.OutputVolumePercent; set => _mixer.OutputVolumePercent = value; }
     public bool ApplicationMuted { get => _mixer.ApplicationMuted; set => _mixer.ApplicationMuted = value; }
     public bool MicrophoneMuted { get => _mixer.MicrophoneMuted; set => _mixer.MicrophoneMuted = value; }
     public bool OutputMuted { get => _mixer.OutputMuted; set => _mixer.OutputMuted = value; }
     public bool NoiseGateEnabled { get => _noiseGate.Enabled; set => _noiseGate.Enabled = value; }
     public bool UseWindowsVoiceProcessing { get; set; }
-    public bool WindowsVoiceProcessingActive { get; private set; }
     public string? WindowsVoiceProcessingFallbackReason { get; private set; }
     public int MonitorGainPercent
     {
@@ -84,9 +84,6 @@ internal sealed class AudioEngine : IAsyncDisposable
     public static bool IsCablePlaybackName(string? name) =>
         !string.IsNullOrWhiteSpace(name) && name.Contains("CABLE Input", StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsCableCaptureName(string? name) =>
-        !string.IsNullOrWhiteSpace(name) && name.Contains("CABLE Output", StringComparison.OrdinalIgnoreCase);
-
     public async Task StartAsync(
         AudioSourceMode mode,
         int processId,
@@ -100,7 +97,6 @@ internal sealed class AudioEngine : IAsyncDisposable
         await StopAsync();
         _applicationBuffer.Clear();
         _microphoneBuffer.Clear();
-        WindowsVoiceProcessingActive = false;
         WindowsVoiceProcessingFallbackReason = null;
         _enumerator = new MMDeviceEnumerator();
 
@@ -149,7 +145,6 @@ internal sealed class AudioEngine : IAsyncDisposable
                     micRecorder = CreateMicrophoneRecorder(microphone, format, UseWindowsVoiceProcessing);
                     AttachRecorder(micRecorder, _microphoneBuffer, UseWindowsVoiceProcessing ? null : _noiseGate);
                     micRecorder.StartRecording();
-                    WindowsVoiceProcessingActive = UseWindowsVoiceProcessing;
                 }
                 catch (Exception ex) when (UseWindowsVoiceProcessing)
                 {
@@ -163,7 +158,6 @@ internal sealed class AudioEngine : IAsyncDisposable
                     micRecorder = CreateMicrophoneRecorder(microphone, format, useWindowsVoiceProcessing: false);
                     AttachRecorder(micRecorder, _microphoneBuffer, _noiseGate);
                     micRecorder.StartRecording();
-                    WindowsVoiceProcessingActive = false;
                 }
             }
 
@@ -183,7 +177,6 @@ internal sealed class AudioEngine : IAsyncDisposable
                     .Build();
                 var monitorProvider = _mixer.CreateReader(drivesTimeline: false);
                 _monitorGainProvider = new GainWaveProvider(monitorProvider, monitorGainPercent);
-                _monitorReader = _monitorGainProvider;
                 _monitorPlayer.Init(_monitorGainProvider);
             }
 
@@ -243,8 +236,7 @@ internal sealed class AudioEngine : IAsyncDisposable
             try { await _player.DisposeAsync(); } catch { }
             _player = null;
         }
-        _monitorReader?.Dispose();
-        _monitorReader = null;
+        _monitorGainProvider?.Dispose();
         _monitorGainProvider = null;
         _primaryReader?.Dispose();
         _primaryReader = null;

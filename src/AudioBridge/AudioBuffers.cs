@@ -143,7 +143,9 @@ internal sealed class MixedAudioProvider
     private long _writeFrame;
     private float _applicationGainDb;
     private float _microphoneGainDb;
-    private float _outputGainDb;
+    private float _applicationVolume = 1f;
+    private float _microphoneVolume = 1f;
+    private float _outputVolume = 1f;
     private bool _applicationMuted;
     private bool _microphoneMuted;
     private bool _outputMuted;
@@ -158,7 +160,9 @@ internal sealed class MixedAudioProvider
     public float PeakLevel => Volatile.Read(ref _peakLevel);
     public float ApplicationGainDb { get => Volatile.Read(ref _applicationGainDb); set => Volatile.Write(ref _applicationGainDb, Math.Clamp(value, -24f, 12f)); }
     public float MicrophoneGainDb { get => Volatile.Read(ref _microphoneGainDb); set => Volatile.Write(ref _microphoneGainDb, Math.Clamp(value, -24f, 12f)); }
-    public float OutputGainDb { get => Volatile.Read(ref _outputGainDb); set => Volatile.Write(ref _outputGainDb, Math.Clamp(value, -24f, 12f)); }
+    public int ApplicationVolumePercent { get => (int)Math.Round(Volatile.Read(ref _applicationVolume) * 100f); set => Volatile.Write(ref _applicationVolume, Math.Clamp(value, 0, 100) / 100f); }
+    public int MicrophoneVolumePercent { get => (int)Math.Round(Volatile.Read(ref _microphoneVolume) * 100f); set => Volatile.Write(ref _microphoneVolume, Math.Clamp(value, 0, 100) / 100f); }
+    public int OutputVolumePercent { get => (int)Math.Round(Volatile.Read(ref _outputVolume) * 100f); set => Volatile.Write(ref _outputVolume, Math.Clamp(value, 0, 100) / 100f); }
     public bool ApplicationMuted { get => Volatile.Read(ref _applicationMuted); set => Volatile.Write(ref _applicationMuted, value); }
     public bool MicrophoneMuted { get => Volatile.Read(ref _microphoneMuted); set => Volatile.Write(ref _microphoneMuted, value); }
     public bool OutputMuted { get => Volatile.Read(ref _outputMuted); set => Volatile.Write(ref _outputMuted, value); }
@@ -232,9 +236,9 @@ internal sealed class MixedAudioProvider
         _applicationAudio.ReadFrames(_applicationTemp, frames);
         _microphoneAudio.ReadFrames(_microphoneTemp, frames);
 
-        float appGain = DbToLinear(Volatile.Read(ref _applicationGainDb));
-        float micGain = DbToLinear(Volatile.Read(ref _microphoneGainDb));
-        float outputGain = DbToLinear(Volatile.Read(ref _outputGainDb));
+        float appGain = Volatile.Read(ref _applicationVolume) * DbToLinear(Volatile.Read(ref _applicationGainDb));
+        float micGain = Volatile.Read(ref _microphoneVolume) * DbToLinear(Volatile.Read(ref _microphoneGainDb));
+        float outputGain = Volatile.Read(ref _outputVolume);
         bool appMute = Volatile.Read(ref _applicationMuted);
         bool micMute = Volatile.Read(ref _microphoneMuted);
         bool outMute = Volatile.Read(ref _outputMuted);
