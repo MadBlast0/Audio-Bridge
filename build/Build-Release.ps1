@@ -55,6 +55,9 @@ try {
     if (-not (Test-Path (Join-Path $PublishDir 'AudioBridge.exe'))) { throw 'AudioBridge.exe was not produced.' }
 
     Write-Host 'Building the MSI installer...' -ForegroundColor Cyan
+    Write-Host 'Checking the WiX installer source files...' -ForegroundColor Cyan
+    & dotnet msbuild $InstallerProject -getItem:Compile
+    if ($LASTEXITCODE -ne 0) { throw "Could not inspect WiX source items (exit code $LASTEXITCODE)." }
     & dotnet build $InstallerProject --configuration Release `
         -p:AppPublishDir="$PublishDir\" -p:ProductVersion=$Version
     if ($LASTEXITCODE -ne 0) { throw "MSI build failed with exit code $LASTEXITCODE." }
