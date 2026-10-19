@@ -7,4 +7,7 @@
     <AppPublishDir Condition="'$(AppPublishDir)' == ''">$(MSBuildThisFileDirectory)..\artifacts\publish\</AppPublishDir>
     <DefineConstants>AppPublishDir="$(AppPublishDir)";ProductVersion=$(ProductVersion)</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AudioBridge.Installer.wxs" />
+  </ItemGroup>
 </Project>
