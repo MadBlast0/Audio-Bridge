@@ -1,5 +1,7 @@
 <Project Sdk="WixToolset.Sdk/5.0.2">
   <PropertyGroup>
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <OutputType>Package</OutputType>
     <OutputName>AudioBridge-Setup</OutputName>
     <Platform>x64</Platform>
@@ -8,6 +10,6 @@
     <DefineConstants>AppPublishDir="$(AppPublishDir)";ProductVersion=$(ProductVersion)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AudioBridge.Installer.wxs" />
+    <Compile Include="$(MSBuildProjectDirectory)\AudioBridge.Installer.wxs" />
   </ItemGroup>
 </Project>
