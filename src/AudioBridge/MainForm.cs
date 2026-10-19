@@ -122,7 +122,11 @@ internal sealed class MainForm : Form
             using var borderPen = new Pen(Border, 1);
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             e.Graphics.DrawRectangle(borderPen, 0, 0, icon.Width - 1, icon.Height - 1);
-            using var wavePen = new Pen(MainText, 2, System.Drawing.Drawing2D.LineCap.Round);
+            using var wavePen = new Pen(MainText, 2)
+            {
+                StartCap = System.Drawing.Drawing2D.LineCap.Round,
+                EndCap = System.Drawing.Drawing2D.LineCap.Round
+            };
             e.Graphics.DrawLine(wavePen, 12, 17, 12, 25);
             e.Graphics.DrawLine(wavePen, 17, 12, 17, 30);
             e.Graphics.DrawLine(wavePen, 22, 9, 22, 33);
@@ -1032,7 +1036,10 @@ internal sealed class MainForm : Form
 
 internal sealed class CleanCard : Panel
 {
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public Color BorderColor { get; set; } = Color.LightGray;
+
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public int Radius { get; set; } = 8;
 
     public CleanCard()
