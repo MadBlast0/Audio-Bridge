@@ -6,7 +6,7 @@ AudioBridge is a Windows desktop audio router. It captures one running app or th
 
 - Capture one running application using Windows per-process loopback, or capture the current default playback device.
 - Mix a selected physical microphone with application audio.
-- Independent app, microphone, and mixed-output gain controls (0 dB by default).
+- Independent app, microphone, and mixed-output volume controls, with optional app and microphone gain processing.
 - Live input and mix meters, plus app, microphone, and output mute controls.
 - Optional headphone monitoring with its own device selector and volume. Desktop capture blocks monitoring on the same default playback device to prevent feedback.
 - Microphone noise control: off, a lightweight in-process noise gate, or Windows communications voice processing when supported by the chosen device.
@@ -26,12 +26,6 @@ End users installing the release MSI do not need the .NET runtime or SDK.
 ## Run from source
 
 ```powershell
-.\scripts\Run-Dev.bat
-```
-
-Or run the project directly:
-
-```powershell
 dotnet run --project .\src\AudioBridge\AudioBridge.csproj
 ```
 
@@ -43,7 +37,7 @@ On Windows with the .NET 10 SDK and WiX Toolset restore access:
 .\build\Build-Release.ps1 -Version 1.0.0
 ```
 
-Or double-click `build\Build-Release.bat`. The build publishes a self-contained Windows x64 executable and builds the MSI installer in `artifacts\`. Unless `-SkipDriverPayload` is used, the build downloads and validates the official VB-CABLE package and embeds it in the executable. A temporarily downloaded driver archive is removed from the source tree after the build.
+The build publishes a self-contained Windows x64 executable and builds the MSI installer in `artifacts\`. Unless `-SkipDriverPayload` is used, the build downloads and validates the official VB-CABLE package and embeds it in the executable. A temporarily downloaded driver archive is removed from the source tree after the build.
 
 GitHub Actions runs only when you push a version tag such as `v1.0.0`. It builds the release MSI and EXE, then attaches them to a GitHub Release. Regular commits and pushes to `main` do not run a workflow. For each release, create and push a new tag, incrementing one of the first three version numbers (for example, `v1.0.0` then `v1.0.1`).
 
@@ -54,7 +48,7 @@ The MSI is a per-machine Windows Installer package and can be removed through Wi
 1. Install `AudioBridge-Setup.msi` and launch AudioBridge from the Start menu.
 2. The MSI installs AudioBridge. On first launch, if VB-CABLE is not detected, AudioBridge offers to unpack the official driver archive embedded in the release executable and launch VB-Audio's installer. The driver is installed by that separate vendor installer, with Windows approval, and may require a restart.
 3. Select **One app** and a running application, or select **Desktop audio**. Use **Refresh** if the app was opened after AudioBridge.
-4. Select a physical microphone and the desired playback destination. Input gains start at 0 dB.
+4. Select a physical microphone and the desired playback destination. Adjust the app, microphone, and output volume separately. App and microphone gain controls are optional and start disabled.
 5. In the target voice or chat application, select the VB-CABLE recording endpoint (often named `CABLE Output (VB-Audio Virtual Cable)`).
 6. Click **Start routing**.
 
